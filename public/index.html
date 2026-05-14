@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مُقصّر الروابط الاحترافي</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --success: #10B981;
+            --error: #EF4444;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+        p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+        .input-group {
+            display: flex;
+            margin-bottom: 1.5rem;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input[type="url"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            text-align: left;
+            direction: ltr;
+        }
+        input[type="url"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        button:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        .result-card {
+            display: none;
+            background-color: #EEF2FF;
+            border: 1px solid #C7D2FE;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            text-align: right;
+        }
+        .result-card.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .short-url-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 0.5rem;
+            border: 1px solid #E5E7EB;
+        }
+        .short-url {
+            flex-grow: 1;
+            color: var(--primary);
+            font-weight: bold;
+            direction: ltr;
+            text-align: left;
+            word-break: break-all;
+            text-decoration: none;
+        }
+        .short-url:hover {
+            text-decoration: underline;
+        }
+        .copy-btn {
+            background-color: var(--success);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        .copy-btn:hover {
+            background-color: #059669;
+        }
+        .stats-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .stats-container {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #C7D2FE;
+        }
+        .message {
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .message.error {
+            color: var(--error);
+        }
+        .message.success {
+            color: var(--success);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>مُقصّر الروابط</h1>
+        <p>قم بتقصير روابطك الطويلة بسهولة وشاركها مع الآخرين</p>
+
+        <form id="shortenForm">
+            <div class="input-group">
+                <input type="url" id="originalUrl" placeholder="https://example.com/very-long-url..." required>
+                <button type="submit" id="submitBtn">تقصير الرابط</button>
+            </div>
+            <div id="message" class="message"></div>
+        </form>
+
+        <div class="result-card" id="resultCard">
+            <div style="font-weight: bold; margin-bottom: 5px;" id="resultTitle">تم إنشاء الرابط القصير بنجاح!</div>
+            <div class="short-url-container">
+                <a href="#" target="_blank" class="short-url" id="shortUrlText">http://localhost:3000/xyz123</a>
+                <button class="copy-btn" id="copyBtn" type="button" onclick="copyUrl()">نسخ</button>
+            </div>
+            <span class="stats-link" onclick="fetchStats()">عرض إحصائيات هذا الرابط</span>
+            
+            <div class="stats-container" id="statsContainer">
+                <strong>عدد الزيارات: </strong> <span id="clicksCount">0</span><br>
+                <small style="color: #6B7280;">تاريخ الإنشاء: <span id="createdAt"></span></small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('shortenForm');
+        const urlInput = document.getElementById('originalUrl');
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+        const resultCard = document.getElementById('resultCard');
+        const shortUrlText = document.getElementById('shortUrlText');
+        const copyBtn = document.getElementById('copyBtn');
+        const resultTitle = document.getElementById('resultTitle');
+        const statsContainer = document.getElementById('statsContainer');
+        
+        let currentShortCode = '';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = urlInput.value.trim();
+            
+            if (!url) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'جاري التقصير...';
+            messageDiv.className = 'message';
+            messageDiv.textContent = '';
+            resultCard.classList.remove('show');
+            statsContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('/shorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'حدث خطأ غير معروف');
+                }
+
+                currentShortCode = data.shortCode;
+                shortUrlText.textContent = data.shortUrl;
+                shortUrlText.href = data.shortUrl;
+                
+                if (data.isNew) {
+                    resultTitle.textContent = 'تم إنشاء الرابط القصير بنجاح! 🎉';
+                } else {
+                    resultTitle.textContent = 'هذا الرابط تم تقصيره من قبل:';
+                }
+
+                resultCard.classList.add('show');
+                urlInput.value = '';
+
+            } catch (error) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = error.message;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'تقصير الرابط';
+                copyBtn.textContent = 'نسخ';
+                copyBtn.style.backgroundColor = 'var(--success)';
+            }
+        });
+
+        async function copyUrl() {
+            try {
+                await navigator.clipboard.writeText(shortUrlText.textContent);
+                copyBtn.textContent = 'تم النسخ!';
+                copyBtn.style.backgroundColor = '#059669';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = 'نسخ';
+                    copyBtn.style.backgroundColor = 'var(--success)';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy!', err);
+            }
+        }
+
+        async function fetchStats() {
+            if (!currentShortCode) return;
+            
+            try {
+                const response = await fetch(`/stats/${currentShortCode}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('clicksCount').textContent = data.clicks;
+                    document.getElementById('createdAt').textContent = new Date(data.createdAt).toLocaleDateString('ar-EG');
+                    statsContainer.style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Failed to fetch stats', err);
+            }
+        }
+    </script>
+</body>
+</html>
