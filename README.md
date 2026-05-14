@@ -1,5 +1,7 @@
 # URL Shortener API
 
+![App Screenshot](screenshot.png)
+
 A modern, fast, and secure URL Shortener application built with Node.js, Express, and MongoDB.
 
 ## Features
